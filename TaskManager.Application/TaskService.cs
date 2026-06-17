@@ -1,61 +1,61 @@
+using Microsoft.EntityFrameworkCore;
 using TaskManager.Domain;
 
 namespace TaskManager.Application;
 public class TaskService : ITaskService
 {
-    //old way to define a list as a class property
-    //public static List<string> {get; set;} = new List<string>(); 
-    public List<TaskItem> Tasks {get; set;} = []; //new way
+    private readonly ApplicationDbContext _context;
+    public TaskService(ApplicationDbContext context)
+    {
+        _context = context;
+    }
 
-    public TaskItem CreateTask(string title, string description){
+    public async Task<List<TaskItem>> GetAllTasks()
+    {
+        var tasks = await _context.TaskItems.ToListAsync();
+        return tasks;
+    }
+
+    public async Task<TaskItem> GetTask(Guid id)
+    {
+        var task = await _context.TaskItems.FirstOrDefaultAsync(t => t.Id == id);
+        return task;    
+    }
+
+    public async Task<TaskItem> CreateTask(string title, string description){
         TaskItem task = new TaskItem()
         {
             Id = Guid.NewGuid(),
             Title = title,
             Description = description
         };
-        Tasks.Add(task);
+        await _context.TaskItems.AddAsync(task);
+        await _context.SaveChangesAsync();
         return task;
     }
 
-    public List<TaskItem> GetAllTasks()
-    {
-        return Tasks;
-    }
-
-    public TaskItem GetTask(Guid id)
-    {
-        var tasks = GetAllTasks();
-        var task = tasks.FirstOrDefault(t => t.Id == id);
-        return task;    
-    }
-
-    public bool DeleteTask(Guid taskId)
+    public async Task<bool> DeleteTask(Guid taskId)
     {
         var found = false;
-        foreach(var task in Tasks)
+        var task = await _context.TaskItems.FirstOrDefaultAsync(t => t.Id == taskId);
+        if(task != null)
         {
-            if(task.Id == taskId)
-            {
-                found = true;
-                Tasks.Remove(task);
-                return found;
-            }
+            found = true;
+            _context.Remove(task);
+            await _context.SaveChangesAsync();
         }
         return found;
     }
 
-    public bool ToggleTask(Guid taskId)
+    public async Task<bool> ToggleTask(Guid taskId)
     {
         var found = false;
-        foreach(var task in Tasks)
+        var task = await _context.TaskItems.FirstOrDefaultAsync(t => t.Id == taskId);
+        if(task != null)
         {
-            if(task.Id == taskId)
-            {
-                found = true;
-                task.IsCompleted = !task.IsCompleted;
-                return found;
-            }
+            found = true;
+            task.IsCompleted = !task.IsCompleted;
+            await _context.SaveChangesAsync();
         }
         return found;
     }

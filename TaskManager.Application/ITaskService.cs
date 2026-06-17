@@ -4,13 +4,15 @@ namespace TaskManager.Application;
 
 public interface ITaskService
 {
-    TaskItem CreateTask(string title, string description);
+    Task<TaskItem> CreateTask(string title, string description);
 
-    List<TaskItem> GetAllTasks();
+    Task<List<TaskItem>> GetAllTasks(bool? status=null, string? search=null);
 
-    TaskItem GetTask(Guid id);
+    Task<TaskItem> GetTask(Guid id);
 
-    bool DeleteTask(Guid taskId);
+    Task<bool> DeleteTask(Guid taskId);
 
-    bool ToggleTask(Guid taskId);
+    Task<bool> ToggleTask(Guid taskId);
+
+    Task<TaskItem> UpdateTask(Guid id, string? title = null, string? description = null);
 }

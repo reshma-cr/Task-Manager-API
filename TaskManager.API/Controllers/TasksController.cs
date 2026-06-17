@@ -14,15 +14,15 @@ public class TasksController : ControllerBase
     }
 
     [HttpGet]
-    public ActionResult GetAllTasks(){
-        var tasks = _taskService.GetAllTasks();
+    public async Task<ActionResult> GetAllTasks(bool? status=null, string? search = null){
+        var tasks = await _taskService.GetAllTasks();
         return Ok(tasks);
     }
 
     [HttpGet("{id}")]
-    public ActionResult<TaskItem> GetTask(Guid id)
+    public async Task<ActionResult<TaskItem>> GetTask(Guid id)
     {
-        var task = _taskService.GetTask(id);
+        var task = await _taskService.GetTask(id);
         if (task == null)
         {
             return NotFound();
@@ -31,20 +31,21 @@ public class TasksController : ControllerBase
     }
 
     [HttpPost]
-    public ActionResult<TaskItem> CreateTask([FromBody] TaskItem task)
+    public async Task<ActionResult<TaskItem>> CreateTask([FromBody] TaskItem task)
     {
         if (task == null || string.IsNullOrWhiteSpace(task.Title) || string.IsNullOrWhiteSpace(task.Description))
         {
             return BadRequest("Task title and description cannot be empty.");
         }
-        var createdTask = _taskService.CreateTask(task.Title, task.Description);
+        var createdTask = await _taskService.CreateTask(task.Title, task.Description);
         return CreatedAtAction(nameof(GetTask), new { id = createdTask.Id }, createdTask);
     }
 
     [HttpDelete("{id}")]
-    public ActionResult DeleteTask(Guid id)
+    public async Task<ActionResult> DeleteTask(Guid id)
     {
-        if (!_taskService.DeleteTask(id))
+        var deletedTask = await _taskService.DeleteTask(id);
+        if (!deletedTask)
         {
             return NotFound();
         }
@@ -52,9 +53,10 @@ public class TasksController : ControllerBase
     }
 
     [HttpPatch("{id}/complete")]
-    public ActionResult ToggleTask(Guid id)
+    public async Task<ActionResult> ToggleTask(Guid id)
     {
-        if (!_taskService.ToggleTask(id))
+        var toggledTask = await _taskService.ToggleTask(id);
+        if (!toggledTask)
         {
             return NotFound();
         }
