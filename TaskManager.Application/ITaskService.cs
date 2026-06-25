@@ -14,5 +14,7 @@ public interface ITaskService
 
     Task<bool> ToggleTask(Guid taskId);
 
-    Task<TaskItem> UpdateTask(Guid id, string? title = null, string? description = null);
+    Task<TaskItem> UpdateTask(Guid id, string title, string description, bool isCompleted);
+
+    Task<TaskItem> PatchTask(Guid id, string? title, string? description, bool? iscompleted);
 }

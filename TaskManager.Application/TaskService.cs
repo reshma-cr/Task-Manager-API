@@ -1,3 +1,4 @@
+using System.Security;
 using Microsoft.EntityFrameworkCore;
 using TaskManager.Domain;
 
@@ -10,10 +11,19 @@ public class TaskService : ITaskService
         _context = context;
     }
 
-    public async Task<List<TaskItem>> GetAllTasks()
+    public async Task<List<TaskItem>> GetAllTasks(bool? status=null, string? search=null)
     {
-        var tasks = await _context.TaskItems.ToListAsync();
-        return tasks;
+        var query = _context.TaskItems.AsQueryable();
+        if(status != null)
+        {
+            query = query.Where(t => t.IsCompleted == status);
+            
+        }
+        if(search != null)
+        {
+            query = query.Where(t => t.Title.Contains(search));
+        }
+        return await query.ToListAsync();
     }
 
     public async Task<TaskItem> GetTask(Guid id)
@@ -58,5 +68,34 @@ public class TaskService : ITaskService
             await _context.SaveChangesAsync();
         }
         return found;
+    }
+
+    public async Task<TaskItem> UpdateTask(Guid id, string title, string description, bool isCompleted)
+    {
+        var task = await _context.TaskItems.FirstOrDefaultAsync(t => t.Id == id);
+        task.Title = title;
+        task.Description = description;
+        task.IsCompleted = isCompleted;
+        await _context.SaveChangesAsync();
+        return task;
+    }
+
+    public async Task<TaskItem> PatchTask(Guid id, string? title, string? description, bool? status)
+    {
+        var task = await _context.TaskItems.FirstOrDefaultAsync(t => t.Id == id);
+        if (!String.IsNullOrEmpty(title))
+        {
+            task.Title = title;
+        }
+        if (!String.IsNullOrEmpty(description))
+        {
+            task.Description = description;
+        }
+        if(status != null)
+        {
+            task.IsCompleted = status.Value;
+        }
+        await _context.SaveChangesAsync();
+        return task;
     }
 }

@@ -2,7 +2,6 @@ using System.ComponentModel.DataAnnotations;
 
 public class UpdateTaskDTO
 {
-    [Required]
     [MaxLength(60)]
     public string Title{get; set;} = string.Empty;
 
