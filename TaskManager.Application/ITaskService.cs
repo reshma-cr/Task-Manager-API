@@ -10,11 +10,11 @@ public interface ITaskService
 
     Task<TaskItem> GetTask(Guid userid, Guid id);
 
-    Task<bool> DeleteTask(Guid taskId);
+    Task<bool> DeleteTask(Guid taskId, Guid userId);
 
-    Task<bool> ToggleTask(Guid taskId);
+    Task<bool> ToggleTask(Guid taskId, Guid UserId);
 
-    Task<TaskItem> UpdateTask(Guid id, string title, string description, bool isCompleted);
+    Task<TaskItem> UpdateTask(Guid id, Guid userId, string title, string description, bool isCompleted);
 
-    Task<TaskItem> PatchTask(Guid id, string? title, string? description, bool? iscompleted);
+    Task<TaskItem> PatchTask(Guid id, Guid userId, string? title, string? description, bool? iscompleted);
 }

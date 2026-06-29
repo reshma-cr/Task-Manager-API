@@ -65,7 +65,8 @@ public class TasksController : ControllerBase
     [HttpDelete("{id}")]
     public async Task<ActionResult> DeleteTask(Guid id)
     {
-        var deletedTask = await _taskService.DeleteTask(id);
+        var userId = GetCurrentUserId();
+        var deletedTask = await _taskService.DeleteTask(id, userId);
         if (!deletedTask)
         {
             var problemDetails = new ProblemDetails()
@@ -83,7 +84,8 @@ public class TasksController : ControllerBase
     [HttpPatch("{id}/complete")]
     public async Task<ActionResult> ToggleTask(Guid id)
     {
-        var toggledTask = await _taskService.ToggleTask(id);
+        var userId = GetCurrentUserId();
+        var toggledTask = await _taskService.ToggleTask(id, userId);
         if (!toggledTask)
         {
             var problemDetails = new ProblemDetails()
@@ -101,7 +103,8 @@ public class TasksController : ControllerBase
     [HttpPut("{id}")]
     public async Task<ActionResult> UpdateTask([FromBody] UpdateTaskDTO dto, Guid id)
     {
-        var task = await _taskService.GetTask(id);
+        var userId = GetCurrentUserId();
+        var task = await _taskService.GetTask(userId, id);
         if(task == null)
         {
             var problemDetails = new ProblemDetails()
@@ -113,14 +116,15 @@ public class TasksController : ControllerBase
         
             return NotFound(problemDetails);
         }
-        await _taskService.UpdateTask(id, dto.Title, dto.Description, dto.IsCompleted);
+        await _taskService.UpdateTask(id, userId, dto.Title, dto.Description, dto.IsCompleted);
         return NoContent();
     }
 
     [HttpPatch("{id}")]
     public async Task<ActionResult> PatchTask([FromBody] PatchTaskDTO dto, Guid id)
     {
-        var task = await _taskService.GetTask(id);
+        var userId = GetCurrentUserId();
+        var task = await _taskService.GetTask(userId, id);
         if(task == null)
         {
             var problemDetails = new ProblemDetails()
@@ -132,7 +136,7 @@ public class TasksController : ControllerBase
         
             return NotFound(problemDetails);
         }
-        task = await _taskService.PatchTask(id, dto.Title, dto.Description, dto.IsCompleted);
+        task = await _taskService.PatchTask(id, userId, dto.Title, dto.Description, dto.IsCompleted);
         return Ok(task);
     }
 

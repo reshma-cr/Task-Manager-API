@@ -45,10 +45,10 @@ public class TaskService : ITaskService
         return task;
     }
 
-    public async Task<bool> DeleteTask(Guid taskId)
+    public async Task<bool> DeleteTask(Guid taskId, Guid userId)
     {
         var found = false;
-        var task = await _context.TaskItems.FirstOrDefaultAsync(t => t.Id == taskId);
+        var task = await _context.TaskItems.FirstOrDefaultAsync(t => t.Id == taskId && t.UserId == userId);
         if(task != null)
         {
             found = true;
@@ -58,10 +58,10 @@ public class TaskService : ITaskService
         return found;
     }
 
-    public async Task<bool> ToggleTask(Guid taskId)
+    public async Task<bool> ToggleTask(Guid taskId, Guid userId)
     {
         var found = false;
-        var task = await _context.TaskItems.FirstOrDefaultAsync(t => t.Id == taskId);
+        var task = await _context.TaskItems.FirstOrDefaultAsync(t => t.Id == taskId && t.UserId == userId);
         if(task != null)
         {
             found = true;
@@ -71,9 +71,9 @@ public class TaskService : ITaskService
         return found;
     }
 
-    public async Task<TaskItem> UpdateTask(Guid id, string title, string description, bool isCompleted)
+    public async Task<TaskItem> UpdateTask(Guid id, Guid userId, string title, string description, bool isCompleted)
     {
-        var task = await _context.TaskItems.FirstOrDefaultAsync(t => t.Id == id);
+        var task = await _context.TaskItems.FirstOrDefaultAsync(t => t.Id == id && t.UserId == userId);
         task.Title = title;
         task.Description = description;
         task.IsCompleted = isCompleted;
@@ -81,9 +81,9 @@ public class TaskService : ITaskService
         return task;
     }
 
-    public async Task<TaskItem> PatchTask(Guid id, string? title, string? description, bool? status)
+    public async Task<TaskItem> PatchTask(Guid id, Guid userId, string? title, string? description, bool? status)
     {
-        var task = await _context.TaskItems.FirstOrDefaultAsync(t => t.Id == id);
+        var task = await _context.TaskItems.FirstOrDefaultAsync(t => t.Id == id && t.UserId == userId);
         if (!String.IsNullOrEmpty(title))
         {
             task.Title = title;
