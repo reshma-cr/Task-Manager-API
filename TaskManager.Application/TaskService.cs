@@ -11,9 +11,9 @@ public class TaskService : ITaskService
         _context = context;
     }
 
-    public async Task<List<TaskItem>> GetAllTasks(bool? status=null, string? search=null)
+    public async Task<List<TaskItem>> GetAllTasks(Guid userId, bool? status=null, string? search=null)
     {
-        var query = _context.TaskItems.AsQueryable();
+        var query = _context.TaskItems.AsQueryable().Where(t => t.UserId == userId);
         if(status != null)
         {
             query = query.Where(t => t.IsCompleted == status);
@@ -26,18 +26,19 @@ public class TaskService : ITaskService
         return await query.ToListAsync();
     }
 
-    public async Task<TaskItem> GetTask(Guid id)
+    public async Task<TaskItem> GetTask(Guid userid, Guid id)
     {
-        var task = await _context.TaskItems.FirstOrDefaultAsync(t => t.Id == id);
+        var task = await _context.TaskItems.FirstOrDefaultAsync(t => t.Id == id && t.UserId == userid);
         return task;    
     }
 
-    public async Task<TaskItem> CreateTask(string title, string description){
+    public async Task<TaskItem> CreateTask(string title, string description, Guid userId){
         TaskItem task = new TaskItem()
         {
             Id = Guid.NewGuid(),
             Title = title,
-            Description = description
+            Description = description,
+            UserId = userId
         };
         await _context.TaskItems.AddAsync(task);
         await _context.SaveChangesAsync();

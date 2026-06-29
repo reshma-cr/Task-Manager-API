@@ -1,9 +1,13 @@
 using Microsoft.AspNetCore.Mvc;
 using TaskManager.Domain;
 using TaskManager.Application;
+using Microsoft.AspNetCore.Authorization;
+using System.Security.Claims;
+using Microsoft.AspNetCore.Identity;
 
 [ApiController]
 [Route("api/[controller]")]
+[Authorize]
 public class TasksController : ControllerBase
 {
     private readonly ITaskService _taskService;
@@ -15,14 +19,16 @@ public class TasksController : ControllerBase
 
     [HttpGet]
     public async Task<ActionResult> GetAllTasks(bool? status=null, string? search = null){
-        var tasks = await _taskService.GetAllTasks(status, search);
+        Guid userId = GetCurrentUserId();
+        var tasks = await _taskService.GetAllTasks(userId, status, search);
         return Ok(tasks);
     }
 
     [HttpGet("{id}")]
     public async Task<ActionResult<TaskItem>> GetTask(Guid id)
     {
-        var task = await _taskService.GetTask(id);        
+        var userid = GetCurrentUserId();
+        var task = await _taskService.GetTask(userid, id);        
         if (task == null)
         {
             var problemDetails = new ProblemDetails()
@@ -51,7 +57,8 @@ public class TasksController : ControllerBase
         
             return BadRequest(problemDetails);
         }
-        var createdTask = await _taskService.CreateTask(task.Title, task.Description);
+        var userId = GetCurrentUserId();
+        var createdTask = await _taskService.CreateTask(task.Title, task.Description, userId);
         return CreatedAtAction(nameof(GetTask), new { id = createdTask.Id }, createdTask);
     }
 
@@ -127,5 +134,11 @@ public class TasksController : ControllerBase
         }
         task = await _taskService.PatchTask(id, dto.Title, dto.Description, dto.IsCompleted);
         return Ok(task);
+    }
+
+    private Guid GetCurrentUserId()
+    {
+        var userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+        return userId;
     }
 }
