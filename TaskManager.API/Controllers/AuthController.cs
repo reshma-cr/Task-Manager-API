@@ -39,7 +39,7 @@ public class AuthController : ControllerBase
         try
         {
             var result = await _authService.LoginUser(dto.Email, dto.Password);
-            return Ok(result);
+            return Ok(new { token = result });
         }
         catch(Exception ex)
         {
