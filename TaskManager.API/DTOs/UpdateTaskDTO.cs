@@ -6,7 +6,7 @@ public class UpdateTaskDTO
     public string Title{get; set;} = string.Empty;
 
     [MaxLength(120)]
-    public string Description {get; set;} = string.Empty;
+    public string? Notes {get; set;} 
 
     public bool IsCompleted{get; set;} = false;
 

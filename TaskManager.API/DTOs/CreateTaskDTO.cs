@@ -7,6 +7,6 @@ public class CreateTaskDTO
     public string Title{get; set;} = string.Empty;
     
     [MaxLength(120)]
-    public string Description {get; set;} = string.Empty;
+    public string? Notes {get; set;} 
 
 }

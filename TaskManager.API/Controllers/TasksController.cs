@@ -46,7 +46,7 @@ public class TasksController : ControllerBase
     [HttpPost]
     public async Task<ActionResult<TaskItem>> CreateTask([FromBody] TaskItem task)
     {
-        if (task == null || string.IsNullOrWhiteSpace(task.Title) || string.IsNullOrWhiteSpace(task.Description))
+        if (task == null || string.IsNullOrWhiteSpace(task.Title) || string.IsNullOrWhiteSpace(task.Notes))
         {
             var problemDetails = new ProblemDetails()
             {
@@ -58,7 +58,7 @@ public class TasksController : ControllerBase
             return BadRequest(problemDetails);
         }
         var userId = GetCurrentUserId();
-        var createdTask = await _taskService.CreateTask(task.Title, task.Description, userId);
+        var createdTask = await _taskService.CreateTask(task.Title, task.Notes, userId);
         return CreatedAtAction(nameof(GetTask), new { id = createdTask.Id }, createdTask);
     }
 
@@ -116,7 +116,7 @@ public class TasksController : ControllerBase
         
             return NotFound(problemDetails);
         }
-        await _taskService.UpdateTask(id, userId, dto.Title, dto.Description, dto.IsCompleted);
+        await _taskService.UpdateTask(id, userId, dto.Title, dto.Notes, dto.IsCompleted);
         return NoContent();
     }
 
@@ -136,7 +136,7 @@ public class TasksController : ControllerBase
         
             return NotFound(problemDetails);
         }
-        task = await _taskService.PatchTask(id, userId, dto.Title, dto.Description, dto.IsCompleted);
+        task = await _taskService.PatchTask(id, userId, dto.Title, dto.Notes, dto.IsCompleted);
         return Ok(task);
     }
 

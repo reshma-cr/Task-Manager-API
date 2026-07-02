@@ -32,12 +32,12 @@ public class TaskService : ITaskService
         return task;    
     }
 
-    public async Task<TaskItem> CreateTask(string title, string description, Guid userId){
+    public async Task<TaskItem> CreateTask(string title, string? notes, Guid userId){
         TaskItem task = new TaskItem()
         {
             Id = Guid.NewGuid(),
             Title = title,
-            Description = description,
+            Notes = notes,
             UserId = userId
         };
         await _context.TaskItems.AddAsync(task);
@@ -71,26 +71,26 @@ public class TaskService : ITaskService
         return found;
     }
 
-    public async Task<TaskItem> UpdateTask(Guid id, Guid userId, string title, string description, bool isCompleted)
+    public async Task<TaskItem> UpdateTask(Guid id, Guid userId, string title, string? notes, bool isCompleted)
     {
         var task = await _context.TaskItems.FirstOrDefaultAsync(t => t.Id == id && t.UserId == userId);
         task.Title = title;
-        task.Description = description;
+        task.Notes = notes;
         task.IsCompleted = isCompleted;
         await _context.SaveChangesAsync();
         return task;
     }
 
-    public async Task<TaskItem> PatchTask(Guid id, Guid userId, string? title, string? description, bool? status)
+    public async Task<TaskItem> PatchTask(Guid id, Guid userId, string? title, string? notes, bool? status)
     {
         var task = await _context.TaskItems.FirstOrDefaultAsync(t => t.Id == id && t.UserId == userId);
         if (!String.IsNullOrEmpty(title))
         {
             task.Title = title;
         }
-        if (!String.IsNullOrEmpty(description))
+        if (!String.IsNullOrEmpty(notes))
         {
-            task.Description = description;
+            task.Notes = notes;
         }
         if(status != null)
         {
