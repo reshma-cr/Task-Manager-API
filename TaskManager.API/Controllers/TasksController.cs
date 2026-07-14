@@ -3,7 +3,6 @@ using TaskManager.Domain;
 using TaskManager.Application;
 using Microsoft.AspNetCore.Authorization;
 using System.Security.Claims;
-using Microsoft.AspNetCore.Identity;
 
 [ApiController]
 [Route("api/[controller]")]
@@ -44,9 +43,9 @@ public class TasksController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<ActionResult<TaskItem>> CreateTask([FromBody] TaskItem task)
+    public async Task<ActionResult<TaskItem>> CreateTask([FromBody] CreateTaskDTO dto)
     {
-        if (task == null || string.IsNullOrWhiteSpace(task.Title) || string.IsNullOrWhiteSpace(task.Notes))
+        if (dto == null || string.IsNullOrWhiteSpace(dto.Title))
         {
             var problemDetails = new ProblemDetails()
             {
@@ -58,7 +57,7 @@ public class TasksController : ControllerBase
             return BadRequest(problemDetails);
         }
         var userId = GetCurrentUserId();
-        var createdTask = await _taskService.CreateTask(task.Title, task.Notes, userId);
+        var createdTask = await _taskService.CreateTask(dto.Title, dto.Notes, userId, dto.DueDate, dto.DueTime, dto.ReminderAt, dto.ProjectId);
         return CreatedAtAction(nameof(GetTask), new { id = createdTask.Id }, createdTask);
     }
 
@@ -116,7 +115,7 @@ public class TasksController : ControllerBase
         
             return NotFound(problemDetails);
         }
-        await _taskService.UpdateTask(id, userId, dto.Title, dto.Notes, dto.IsCompleted);
+        await _taskService.UpdateTask(id, userId, dto.Title, dto.Notes, dto.IsCompleted, dto.DueDate, dto.DueTime, dto.ReminderAt, dto.ProjectId);
         return NoContent();
     }
 
@@ -136,7 +135,7 @@ public class TasksController : ControllerBase
         
             return NotFound(problemDetails);
         }
-        task = await _taskService.PatchTask(id, userId, dto.Title, dto.Notes, dto.IsCompleted);
+        task = await _taskService.PatchTask(id, userId, dto.Title, dto.Notes, dto.IsCompleted, dto.DueDate, dto.DueTime, dto.ReminderAt, dto.ProjectId);
         return Ok(task);
     }
 

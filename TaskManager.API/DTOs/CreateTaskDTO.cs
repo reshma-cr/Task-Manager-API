@@ -8,5 +8,9 @@ public class CreateTaskDTO
     
     [MaxLength(120)]
     public string? Notes {get; set;} 
+    public DateOnly? DueDate {get; set;}
+    public TimeOnly? DueTime {get; set;}
+    public DateTime? ReminderAt {get; set;}
+    public Guid? ProjectId {get; set;}
 
 }

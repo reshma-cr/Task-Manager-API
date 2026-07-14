@@ -4,7 +4,7 @@ namespace TaskManager.Application;
 
 public interface ITaskService
 {
-    Task<TaskItem> CreateTask(string title, string? notes, Guid userId);
+    Task<TaskItem> CreateTask(string title, string? notes, Guid userId, DateOnly? dueDate, TimeOnly? dueTime, DateTime? reminderAt, Guid? projectId);
 
     Task<List<TaskItem>> GetAllTasks(Guid userid, bool? status=null, string? search=null);
 
@@ -14,7 +14,7 @@ public interface ITaskService
 
     Task<bool> ToggleTask(Guid taskId, Guid UserId);
 
-    Task<TaskItem> UpdateTask(Guid id, Guid userId, string title, string? notes, bool isCompleted);
+    Task<TaskItem> UpdateTask(Guid id, Guid userId, string title, string? notes, bool isCompleted, DateOnly? dueDate, TimeOnly? dueTime, DateTime? reminderAt, Guid? projectId);
 
-    Task<TaskItem> PatchTask(Guid id, Guid userId, string? title, string? description, bool? iscompleted);
+    Task<TaskItem> PatchTask(Guid id, Guid userId, string? title, string? description, bool? iscompleted, DateOnly? dueDate, TimeOnly? dueTime, DateTime? reminderAt, Guid? projectId);
 }

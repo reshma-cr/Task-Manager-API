@@ -32,14 +32,19 @@ public class TaskService : ITaskService
         return task;    
     }
 
-    public async Task<TaskItem> CreateTask(string title, string? notes, Guid userId){
+    public async Task<TaskItem> CreateTask(string title, string? notes, Guid userId, DateOnly? dueDate, TimeOnly? dueTime, DateTime? reminderAt, Guid? projectId){
         TaskItem task = new TaskItem()
         {
             Id = Guid.NewGuid(),
             Title = title,
             Notes = notes,
-            UserId = userId
+            UserId = userId,
+            DueDate = dueDate,
+            DueTime = dueTime,
+            ReminderAt = reminderAt,
+            ProjectId = projectId
         };
+
         await _context.TaskItems.AddAsync(task);
         await _context.SaveChangesAsync();
         return task;
@@ -71,17 +76,21 @@ public class TaskService : ITaskService
         return found;
     }
 
-    public async Task<TaskItem> UpdateTask(Guid id, Guid userId, string title, string? notes, bool isCompleted)
+    public async Task<TaskItem> UpdateTask(Guid id, Guid userId, string title, string? notes, bool isCompleted, DateOnly? dueDate, TimeOnly? dueTime, DateTime? reminderAt, Guid? projectId)
     {
         var task = await _context.TaskItems.FirstOrDefaultAsync(t => t.Id == id && t.UserId == userId);
         task.Title = title;
         task.Notes = notes;
         task.IsCompleted = isCompleted;
+        task.DueDate = dueDate;
+        task.DueTime = dueTime;
+        task.ReminderAt = reminderAt;
+        task.ProjectId = projectId;
         await _context.SaveChangesAsync();
         return task;
     }
 
-    public async Task<TaskItem> PatchTask(Guid id, Guid userId, string? title, string? notes, bool? status)
+    public async Task<TaskItem> PatchTask(Guid id, Guid userId, string? title, string? notes, bool? status, DateOnly? dueDate, TimeOnly? dueTime, DateTime? reminderAt, Guid? projectId)
     {
         var task = await _context.TaskItems.FirstOrDefaultAsync(t => t.Id == id && t.UserId == userId);
         if (!String.IsNullOrEmpty(title))
@@ -95,6 +104,22 @@ public class TaskService : ITaskService
         if(status != null)
         {
             task.IsCompleted = status.Value;
+        }
+        if (dueDate != null)
+        {
+            task.DueDate = dueDate;
+        }
+        if (dueTime != null)
+        {
+            task.DueTime = dueTime;
+        }
+        if (reminderAt != null)
+        {
+            task.ReminderAt = reminderAt;
+        }
+        if (projectId != null)
+        {
+            task.ProjectId = projectId;
         }
         await _context.SaveChangesAsync();
         return task;
