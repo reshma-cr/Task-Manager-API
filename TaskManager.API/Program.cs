@@ -13,6 +13,7 @@ builder.Services.AddControllers();
 builder.Services.AddScoped<ITaskService, TaskService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IProjectService, ProjectService>();
+builder.Services.AddScoped<INLTaskService, NLTaskService>();
 builder.Services.AddOpenApi();
 
 builder.Services.AddCors(options =>

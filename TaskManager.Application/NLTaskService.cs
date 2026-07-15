@@ -1,20 +1,28 @@
+using System.Text.Json;
+using Anthropic;
+using Anthropic.Models.Messages;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using TaskManager.Application;
 using TaskManager.Domain;
 
+namespace TaskManager.Application;
 public class NLTaskService : INLTaskService
 {
     private readonly IConfiguration _configuration;
     private readonly ITaskService _taskService;
-    public NLTaskService(IConfiguration configuration, ITaskService taskService)
+    private readonly ApplicationDbContext _context;
+    public NLTaskService(IConfiguration configuration, ITaskService taskService, ApplicationDbContext context)
     {
         _configuration = configuration;
         _taskService = taskService;
+        _context = context;
     }
 
     public async Task<TaskItem> NLToJson(string input, Guid userId)
     {
-        string prompt = $@"You are a task extraction assistant. Today's date is {DateTime.UtcNow:yyyy-MM-dd}.
+        var apiKey = _configuration["Anthropic:ApiKey"];
+        var prompt = $@"You are a task extraction assistant. Today's date is {DateTime.UtcNow:yyyy-MM-dd}.
 
         Extract task details from the following natural language input and return ONLY a valid JSON object with no explanation, no preamble, and no markdown formatting.
 
@@ -39,6 +47,42 @@ public class NLTaskService : INLTaskService
         - projectName is the project name string if the user mentions a project (e.g. ""add to Work project""), or null if not mentioned
         - Return ONLY the JSON object, nothing else";
 
+        AnthropicClient client = new() { ApiKey = apiKey};
+        MessageCreateParams parameters = new()
+        {
+            MaxTokens = 1024,
+            Messages =
+            [
+                new()
+                {
+                    Role = Role.User,
+                    Content = prompt,
+                },
+            ],
+            Model = Model.ClaudeHaiku4_5,
+        };
 
+        var message = await client.Messages.Create(parameters);
+        message.Validate();
+        message.Content[0].TryPickText(out var textBlock);
+        var responseText = textBlock?.Text;
+        var doc = JsonDocument.Parse(responseText);
+        var root = doc.RootElement;
+
+        var title = root.GetProperty("title").GetString();
+        var notes = root.GetProperty("notes").ValueKind == JsonValueKind.Null ? null : root.GetProperty("notes").GetString();
+        var dueDate = root.GetProperty("dueDate").ValueKind == JsonValueKind.Null ? (DateOnly?)null : DateOnly.Parse(root.GetProperty("dueDate").GetString());
+        var dueTime = root.GetProperty("dueTime").ValueKind == JsonValueKind.Null ? (TimeOnly?)null : TimeOnly.Parse(root.GetProperty("dueTime").GetString());
+        var reminderAt = root.GetProperty("reminderAt").ValueKind == JsonValueKind.Null ? (DateTime?)null : DateTime.Parse(root.GetProperty("reminderAt").GetString());
+        var projectName = root.GetProperty("projectName").ValueKind == JsonValueKind.Null ? null : root.GetProperty("projectName").GetString();
+
+        Guid? projectId = null;
+        if(projectName != null)
+        {
+            var project = await _context.Projects.FirstOrDefaultAsync(p => p.Name.ToLower() == projectName.ToLower() && p.UserId == userId);
+            projectId = project?.Id;
+        }
+
+        return await _taskService.CreateTask(title, notes, userId, dueDate, dueTime, reminderAt, projectId);
     }
 }

@@ -1,0 +1,39 @@
+using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using TaskManager.Application;
+
+[ApiController]
+[Route("api/[controller]")]
+[Authorize]
+public class NLTaskController : ControllerBase
+{
+    private readonly INLTaskService _nlTaskService;
+    public NLTaskController(INLTaskService nLTaskService)
+    {
+        _nlTaskService = nLTaskService;
+    }
+    [HttpPost]
+    public async Task<ActionResult> CreateNLTask([FromBody]NLTaskDTO dto)
+    {
+        var userId = GetCurrentUserId();
+        var result = await _nlTaskService.NLToJson(dto.Input, userId);
+        if(result == null)
+        {
+            var problemDetails = new ProblemDetails()
+            {
+                Detail = "unable to create task at the moment",
+                Status = StatusCodes.Status400BadRequest,
+                Title = "Unable to create task"
+            };
+            return BadRequest(problemDetails);
+        }
+        return Ok(result);
+    }
+
+    private Guid GetCurrentUserId()
+    {
+        var userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+        return userId;
+    }
+}
