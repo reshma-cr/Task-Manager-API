@@ -1,8 +1,7 @@
 using System.Text.Json;
-using Anthropic;
-using Anthropic.Models.Messages;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using Mscc.GenerativeAI;
 using TaskManager.Application;
 using TaskManager.Domain;
 
@@ -21,7 +20,7 @@ public class NLTaskService : INLTaskService
 
     public async Task<TaskItem> NLToJson(string input, Guid userId)
     {
-        var apiKey = _configuration["Anthropic:ApiKey"];
+        var apiKey = _configuration["Gemini:ApiKey"];
         var prompt = $@"You are a task extraction assistant. Today's date is {DateTime.UtcNow:yyyy-MM-dd}.
 
         Extract task details from the following natural language input and return ONLY a valid JSON object with no explanation, no preamble, and no markdown formatting.
@@ -47,25 +46,11 @@ public class NLTaskService : INLTaskService
         - projectName is the project name string if the user mentions a project (e.g. ""add to Work project""), or null if not mentioned
         - Return ONLY the JSON object, nothing else";
 
-        AnthropicClient client = new() { ApiKey = apiKey};
-        MessageCreateParams parameters = new()
-        {
-            MaxTokens = 1024,
-            Messages =
-            [
-                new()
-                {
-                    Role = Role.User,
-                    Content = prompt,
-                },
-            ],
-            Model = Model.ClaudeHaiku4_5,
-        };
+        var googleAI = new GoogleAI(apiKey);
+        var model = googleAI.GenerativeModel(model : "gemini-3.1-flash-lite");
+        var response = await model.GenerateContent(prompt);
+        var responseText = response.Text;
 
-        var message = await client.Messages.Create(parameters);
-        message.Validate();
-        message.Content[0].TryPickText(out var textBlock);
-        var responseText = textBlock?.Text;
         var doc = JsonDocument.Parse(responseText);
         var root = doc.RootElement;
 
