@@ -51,7 +51,7 @@ public class AuthService : IAuthService
         {
             throw new Exception("invalid email or password");
         }
-        var secret = _configuration["Jwt:Secret"];
+        var secret = Environment.GetEnvironmentVariable("JWT_SECRET") ?? _configuration["Jwt:Secret"];
         var issuer = _configuration["Jwt:Issuer"];
         var expiry = _configuration["Jwt:ExpiryInMinutes"];
         var claims = new List<Claim>

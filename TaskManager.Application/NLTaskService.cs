@@ -21,7 +21,7 @@ public class NLTaskService : INLTaskService
 
     public async Task<TaskItem> NLToJson(string input, Guid userId)
     {
-        var apiKey = _configuration["Gemini:ApiKey"];
+        var apiKey = Environment.GetEnvironmentVariable("GEMINI_API_KEY") ?? _configuration["Gemini:ApiKey"];
         var prompt = $@"You are a task extraction assistant. Today's date is {DateTime.UtcNow:yyyy-MM-dd}.
 
         Extract task details from the following natural language input and return ONLY a valid JSON object with no explanation, no preamble, and no markdown formatting.
