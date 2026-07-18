@@ -2,6 +2,7 @@ using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Mscc.GenerativeAI;
+using Mscc.GenerativeAI.Types;
 using TaskManager.Application;
 using TaskManager.Domain;
 
@@ -46,12 +47,12 @@ public class NLTaskService : INLTaskService
         - projectName is the project name string if the user mentions a project (e.g. ""add to Work project""), or null if not mentioned
         - Return ONLY the JSON object, nothing else";
 
-        var googleAI = new GoogleAI(apiKey);
-        var model = googleAI.GenerativeModel(model : "gemini-3.1-flash-lite");
+        var googleAI = new GoogleAI(apiKey: apiKey);
+        var model = googleAI.GenerativeModel(model : "gemini-3.5-flash");
         var response = await model.GenerateContent(prompt);
         var responseText = response.Text;
 
-        var doc = JsonDocument.Parse(responseText);
+        using var doc = JsonDocument.Parse(responseText);
         var root = doc.RootElement;
 
         var title = root.GetProperty("title").GetString();
@@ -62,7 +63,7 @@ public class NLTaskService : INLTaskService
         var projectName = root.GetProperty("projectName").ValueKind == JsonValueKind.Null ? null : root.GetProperty("projectName").GetString();
 
         Guid? projectId = null;
-        if(projectName != null)
+        if (projectName != null)
         {
             var project = await _context.Projects.FirstOrDefaultAsync(p => p.Name.ToLower() == projectName.ToLower() && p.UserId == userId);
             projectId = project?.Id;
