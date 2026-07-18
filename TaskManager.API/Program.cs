@@ -24,7 +24,7 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowFrontend", policy =>
     {
-        policy.WithOrigins("http://localhost:5173", "http://localhost:3000", "https://your-app.vercel.app")
+        policy.WithOrigins("http://localhost:5173", "http://localhost:3000", "https://task-manager-client-navy-rho.vercel.app")
               .AllowAnyHeader()
               .AllowAnyMethod();
     });
