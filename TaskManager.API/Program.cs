@@ -7,8 +7,26 @@ using TaskManager.Application;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-var connString = Environment.GetEnvironmentVariable("DATABASE_URL") 
-    ?? builder.Configuration.GetConnectionString("DefaultConnection");
+var connString = Environment.GetEnvironmentVariable("DATABASE_URL");
+
+if (!string.IsNullOrEmpty(connString) && connString.StartsWith("postgres://"))
+{
+    // Parse the postgres:// URL into a standard connection string
+    var databaseUri = new Uri(connString);
+    var userInfo = databaseUri.UserInfo.Split(':');
+
+    connString = $"Server={databaseUri.Host};" +
+                 $"Port={databaseUri.Port};" +
+                 $"User Id={userInfo[0]};" +
+                 $"Password={userInfo[1]};" +
+                 $"Database={databaseUri.AbsolutePath.TrimStart('/')};" +
+                 $"SSL Mode=Require;Trust Server Certificate=true;"; // Adjust SSL as needed
+}
+else
+{
+    // Fallback to local configuration if DATABASE_URL is missing or standard
+    connString ??= builder.Configuration.GetConnectionString("DefaultConnection");
+}
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseNpgsql(connString));
