@@ -9,18 +9,26 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 var connString = Environment.GetEnvironmentVariable("DATABASE_URL");
 
-if (!string.IsNullOrEmpty(connString) && connString.StartsWith("postgres://"))
+if (!string.IsNullOrEmpty(connString) && (connString.StartsWith("postgres://") || connString.StartsWith("postgresql://")))
 {
-    // Parse the postgres:// URL into a standard connection string
+    // Standardize to postgres:// for consistent Uri parsing
+    if (connString.StartsWith("postgresql://"))
+    {
+        connString = "postgres://" + connString.Substring(13);
+    }
+
     var databaseUri = new Uri(connString);
     var userInfo = databaseUri.UserInfo.Split(':');
 
+    // If Port is missing (-1), default it to 5432
+    int port = databaseUri.Port == -1 ? 5432 : databaseUri.Port;
+
     connString = $"Server={databaseUri.Host};" +
-                 $"Port={databaseUri.Port};" +
+                 $"Port={port};" +
                  $"User Id={userInfo[0]};" +
                  $"Password={userInfo[1]};" +
                  $"Database={databaseUri.AbsolutePath.TrimStart('/')};" +
-                 $"SSL Mode=Require;Trust Server Certificate=true;"; // Adjust SSL as needed
+                 $"SSL Mode=Require;Trust Server Certificate=true;";
 }
 else
 {
