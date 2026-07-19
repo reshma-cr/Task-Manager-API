@@ -59,7 +59,7 @@ public class NLTaskService : INLTaskService
         var notes = root.GetProperty("notes").ValueKind == JsonValueKind.Null ? null : root.GetProperty("notes").GetString();
         var dueDate = root.GetProperty("dueDate").ValueKind == JsonValueKind.Null ? (DateOnly?)null : DateOnly.Parse(root.GetProperty("dueDate").GetString());
         var dueTime = root.GetProperty("dueTime").ValueKind == JsonValueKind.Null ? (TimeOnly?)null : TimeOnly.Parse(root.GetProperty("dueTime").GetString());
-        var reminderAt = root.GetProperty("reminderAt").ValueKind == JsonValueKind.Null ? (DateTime?)null : DateTime.Parse(root.GetProperty("reminderAt").GetString());
+        var reminderAt = root.GetProperty("reminderAt").ValueKind == JsonValueKind.Null ? (DateTime?)null : DateTime.SpecifyKind(DateTime.Parse(root.GetProperty("reminderAt").GetString()), DateTimeKind.Utc);
         var projectName = root.GetProperty("projectName").ValueKind == JsonValueKind.Null ? null : root.GetProperty("projectName").GetString();
 
         Guid? projectId = null;
